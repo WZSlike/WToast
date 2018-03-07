@@ -9,7 +9,7 @@ iOS项目中可以快速使用的轻提示
 [[WToast share] showToastWithMessage:@"这是轻提示显示的文字" duration:1.2];
 ```
 
-# effect
+# Effect
 ![](https://github.com/WZSlike/WToast/blob/master/WToast%E4%BD%BF%E7%94%A8%E6%95%88%E6%9E%9C.gif)
 
 # License
