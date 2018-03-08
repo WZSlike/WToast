@@ -95,34 +95,36 @@
 
 #pragma mark - Method Public
 - (void)showToastWithMessage:(NSString*)message duration:(NSTimeInterval)duration {
-    self.removeState = NO;
-    self.toastView.alpha = 1;
-    if (self.active == YES) {
-        self.active = NO;
-        dispatch_source_cancel(self.GCDTimer);
-        [self showToastWithMessage:message duration:duration];
-    }else{
-        self.active = YES;
-        self.tempDuration = 0.0;
-        self.toastView.toastMessage = message;
-        self.toastView.center = [[[UIApplication sharedApplication] delegate] window].center;
-        [[[[UIApplication sharedApplication] delegate] window] addSubview:self.toastView];
-        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-        self.GCDTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
-        dispatch_source_set_timer(_GCDTimer,dispatch_walltime(NULL, 0),0.1*NSEC_PER_SEC, 0);
-        __weak typeof(self) weakSelf = self;
-        dispatch_source_set_event_handler(_GCDTimer, ^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            strongSelf.tempDuration += 0.1;
-            NSLog(@"%f",strongSelf.tempDuration);
-            if (strongSelf.tempDuration >= duration) {
-                dispatch_source_cancel(strongSelf.GCDTimer);
-                strongSelf.removeState = YES;
-                [strongSelf dismissSelf];
-            }
-        });
-        dispatch_resume(_GCDTimer);
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.removeState = NO;
+        self.toastView.alpha = 1;
+        if (self.active == YES) {
+            self.active = NO;
+            dispatch_source_cancel(self.GCDTimer);
+            [self showToastWithMessage:message duration:duration];
+        }else{
+            self.active = YES;
+            self.tempDuration = 0.0;
+            self.toastView.toastMessage = message;
+            self.toastView.center = [[[UIApplication sharedApplication] delegate] window].center;
+            [[[[UIApplication sharedApplication] delegate] window] addSubview:self.toastView];
+            dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+            self.GCDTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+            dispatch_source_set_timer(_GCDTimer,dispatch_walltime(NULL, 0),0.1*NSEC_PER_SEC, 0);
+            __weak typeof(self) weakSelf = self;
+            dispatch_source_set_event_handler(_GCDTimer, ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                strongSelf.tempDuration += 0.1;
+                NSLog(@"%f",strongSelf.tempDuration);
+                if (strongSelf.tempDuration >= duration) {
+                    dispatch_source_cancel(strongSelf.GCDTimer);
+                    strongSelf.removeState = YES;
+                    [strongSelf dismissSelf];
+                }
+            });
+            dispatch_resume(_GCDTimer);
+        }   
+    });
 }
 
 - (void)dismissSelf {
